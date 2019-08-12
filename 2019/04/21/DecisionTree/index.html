@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="算法,复杂度证明,决策树,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="几个约定基于易用性与通用性的考虑我们约定：  任一可能的输入中，不会出现等价元素 算法复杂度的结果是平滑的 输入规模应为$k^n$(k的取值应使得计算尽量方便) $log(n!)=\Theta (nlogn)$(可以由Stiring公式证明)  需要用到的公式$\mathrm{A}_{n}^m=n(n-1)(n-2)……(n-m+1)$ $\mathrm{C}{n}^m=\frac {\mathr">
+<meta name="keywords" content="算法,复杂度证明,决策树">
+<meta property="og:type" content="article">
+<meta property="og:title" content="证明算法复杂度下界---决策树基础篇">
+<meta property="og:url" content="http://www.lsmian.com/blog/2019/04/21/DecisionTree/index.html">
+<meta property="og:site_name" content="LDawn的自闭室">
+<meta property="og:description" content="几个约定基于易用性与通用性的考虑我们约定：  任一可能的输入中，不会出现等价元素 算法复杂度的结果是平滑的 输入规模应为$k^n$(k的取值应使得计算尽量方便) $log(n!)=\Theta (nlogn)$(可以由Stiring公式证明)  需要用到的公式$\mathrm{A}_{n}^m=n(n-1)(n-2)……(n-m+1)$ $\mathrm{C}{n}^m=\frac {\mathr">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-08-12T14:46:20.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="证明算法复杂度下界---决策树基础篇">
+<meta name="twitter:description" content="几个约定基于易用性与通用性的考虑我们约定：  任一可能的输入中，不会出现等价元素 算法复杂度的结果是平滑的 输入规模应为$k^n$(k的取值应使得计算尽量方便) $log(n!)=\Theta (nlogn)$(可以由Stiring公式证明)  需要用到的公式$\mathrm{A}_{n}^m=n(n-1)(n-2)……(n-m+1)$ $\mathrm{C}{n}^m=\frac {\mathr">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.lsmian.com/blog/2019/04/21/DecisionTree/">
+
+
+
+
+
+  <title>证明算法复杂度下界---决策树基础篇 | LDawn的自闭室</title>
+  
+
+
+
+
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget/autoload.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">LDawn的自闭室</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">一条不出货的小咸鱼</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.lsmian.com/blog/2019/04/21/DecisionTree/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="LDawn">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LDawn的自闭室">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">证明算法复杂度下界---决策树基础篇</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-21T00:00:00+08:00">
+                2019-04-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="几个约定"><a href="#几个约定" class="headerlink" title="几个约定"></a>几个约定</h1><p>基于易用性与通用性的考虑我们约定：</p>
+<ol>
+<li>任一可能的输入中，不会出现等价元素</li>
+<li>算法复杂度的结果是平滑的</li>
+<li>输入规模应为$k^n$(k的取值应使得计算尽量方便)</li>
+<li>$log(n!)=\Theta (nlogn)$(可以由Stiring公式证明)</li>
+</ol>
+<h1 id="需要用到的公式"><a href="#需要用到的公式" class="headerlink" title="需要用到的公式"></a>需要用到的公式</h1><p><font size="6"><center>$\mathrm{A}_{n}^m=n<em>(n-1)</em>(n-2)<em>……</em>(n-m+1)$</center></font></p>
+<p>$\mathrm{C}<em>{n}^m=\frac {\mathrm{A}</em>{n}^m}{m!}=\frac{n!}{m!(n-m)!}$<br>&lt;/center&gt;</p>
+<font size="3">
+
+<h1 id="什么是决策树"><a href="#什么是决策树" class="headerlink" title="什么是决策树"></a>什么是决策树</h1><ol>
+<li>树节点，通常以<code>a1:a2</code>的形式表示，表意为<code>关键操作</code>，例如<code>小于</code>，<code>大于</code>，<code>等于</code>，<code>是否在N集合内部</code>等等</li>
+<li>分支：即关键操作给出的决定结果</li>
+<li>叶节点：算法最终输出的所有可能结果</li>
+</ol>
+<h1 id="利用决策树证明比较排序的下界"><a href="#利用决策树证明比较排序的下界" class="headerlink" title="利用决策树证明比较排序的下界"></a>利用决策树证明比较排序的下界</h1><ol>
+<li>任何基于比较的排序都可以用决策树T建模</li>
+<li>对于一个特定的算法A$\Rightarrow$一棵特定的树T<ol>
+<li>每一个特定的输入$\Rightarrow$特定树T上的一条路径</li>
+<li>W(n)即对应树的高度</li>
+</ol>
+</li>
+<li>比较排序下界即是所有树的最小高度</li>
+<li>而一个正确的算法，其叶子节点的个数设为L，则L满足：$n!\le L\le2^h\Rightarrow h\ge logn!\in \Omega (nlogn)$</li>
+<li>则比较排序的下界即$nlogn$</li>
+</ol>
+<h1 id="利用决策树证明Ksorted的下界"><a href="#利用决策树证明Ksorted的下界" class="headerlink" title="利用决策树证明Ksorted的下界"></a>利用决策树证明Ksorted的下界</h1><h2 id="题目说明："><a href="#题目说明：" class="headerlink" title="题目说明："></a>题目说明：</h2><p>所谓Ksorted就是将数组划分为K个，$\forall j&gt;i$，第j个组的每个元素比第i个组的元素都大，证明它的下界是$\Omega(nlogk)$.</p>
+<h2 id="解题思路："><a href="#解题思路：" class="headerlink" title="解题思路："></a>解题思路：</h2><p>有了比较排序下界的证明思路，我们知道由于二叉树性质$L\le 2^h$总成立，所以问题转化为要找最少有多少个叶子节点，也就是将n个元素有序的放在k个组中有多少组合。</p>
+<h2 id="答案："><a href="#答案：" class="headerlink" title="答案："></a>答案：</h2><ol>
+<li>任何基于比较的Ksorted都可以用决策树T建模</li>
+<li>对于一个特定的算法A$\Rightarrow$一棵特定的树T<ol>
+<li>每一个特定的输入$\Rightarrow$特定树T上的一条路径</li>
+<li>W(n)即对应树的高度</li>
+</ol>
+</li>
+<li>Ksorted下界即是所有树的最小高度</li>
+<li>而叶子节点对应于所有可能的输出组合，问题转换为n个元素有序的放在k个组中有多少组合。<br><font size="6"><center>$\mathrm{C}_n^{\frac{n}{k}}*\mathrm{C}_{n-\frac{n}{k}}^{\frac{n}{k}}*...*\mathrm{C}_{\frac{n}{k}}^{\frac{n}{k}}\ge \frac{n!}{((\frac{n}{k})!)^k}$</center><font size="3"></font></font></li>
+<li><p>而一个正确的算法，其叶子节点的个数设为L，则L满足(用约定4)：</p>
+<p><font size="6"><center>$\frac{n!}{((\frac{n}{k})!)^k}\le L\le2^h\Rightarrow h\in \Omega (nlogk)$</center><font size="3"></font></font></p>
+</li>
+<li>则Ksorted的下界即$nlogn$</li>
+</ol>
+<h1 id="利用决策树证明螺丝螺母问题下界"><a href="#利用决策树证明螺丝螺母问题下界" class="headerlink" title="利用决策树证明螺丝螺母问题下界"></a>利用决策树证明螺丝螺母问题下界</h1><h2 id="题目说明：-1"><a href="#题目说明：-1" class="headerlink" title="题目说明："></a>题目说明：</h2><p>有一堆螺丝和一堆螺母，用肉眼无法辨别大小，螺丝只能靠螺母测大小，螺母亦然，请将它们一一配对</p>
+<h2 id="解题思路：-1"><a href="#解题思路：-1" class="headerlink" title="解题思路："></a>解题思路：</h2><p>此题可以转化为螺丝的排序问题，但要注意的是，此题决策树的状态发生了改变，不再是二叉树，而是三叉树，多了一个“<code>=</code>”的<code>decision</code></p>
+<h2 id="答案：-1"><a href="#答案：-1" class="headerlink" title="答案："></a>答案：</h2><ol>
+<li>由于将螺丝排好序后，螺母也将随之有序，所以将问题转化为螺丝排序问题</li>
+<li>使用决策树对该问题建模，定义关键操作为’对特定螺母，螺丝比他大还是小或者正好匹配？’</li>
+<li>由于三叉树的特性，我们有$L\le3^h$</li>
+<li>而输出的排列组合为n!，于是我们有$n!\le L\le 3^h\Rightarrow h\ge logn!\Rightarrow h\in \Omega(nlogn)$</li>
+<li>所以该问题下界为$nlogn$</li>
+</ol>
+</font>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+            <a href="/tags/复杂度证明/" rel="tag"># 复杂度证明</a>
+          
+            <a href="/tags/决策树/" rel="tag"># 决策树</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/21/HeapSort/" rel="next" title="堆以及堆排序的优化">
+                <i class="fa fa-chevron-left"></i> 堆以及堆排序的优化
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/23/AverageCost/" rel="prev" title="经典算法的平均复杂度分析">
+                经典算法的平均复杂度分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="LDawn">
+            
+              <p class="site-author-name" itemprop="name">LDawn</p>
+              <p class="site-description motion-element" itemprop="description">不定时更新关于编程或网络攻防相关的文章</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/LDawns" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:lsm@smail.nju.edu.cn" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/LDawn13" target="_blank" title="Twitter">
+                      
+                        <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_44954803" title="CSDN" target="_blank">CSDN</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#几个约定"><span class="nav-number">1.</span> <span class="nav-text">几个约定</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#需要用到的公式"><span class="nav-number">2.</span> <span class="nav-text">需要用到的公式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是决策树"><span class="nav-number">3.</span> <span class="nav-text">什么是决策树</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#利用决策树证明比较排序的下界"><span class="nav-number">4.</span> <span class="nav-text">利用决策树证明比较排序的下界</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#利用决策树证明Ksorted的下界"><span class="nav-number">5.</span> <span class="nav-text">利用决策树证明Ksorted的下界</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#题目说明："><span class="nav-number">5.1.</span> <span class="nav-text">题目说明：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解题思路："><span class="nav-number">5.2.</span> <span class="nav-text">解题思路：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#答案："><span class="nav-number">5.3.</span> <span class="nav-text">答案：</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#利用决策树证明螺丝螺母问题下界"><span class="nav-number">6.</span> <span class="nav-text">利用决策树证明螺丝螺母问题下界</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#题目说明：-1"><span class="nav-number">6.1.</span> <span class="nav-text">题目说明：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解题思路：-1"><span class="nav-number">6.2.</span> <span class="nav-text">解题思路：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#答案：-1"><span class="nav-number">6.3.</span> <span class="nav-text">答案：</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">LDawn</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

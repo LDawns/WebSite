@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="算法,生成树,贪心,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="定理 割中最轻边（唯一）必在某个（全部）MST中（利用此结论可完成对Prim与Kruskal的证明） 圈中最重边（唯一）必不在某个（全部）MST中 证明:若在MST中，则去掉e后，MST被划分为X-Y，再取圈中另一可链接X-Y的边，加入MST中，立得一个更小的MST    若所有圈/割的最重/轻边唯一 $\Rightarrow$ MST唯一,反之不成立 证明即添加/删除最轻/重边，之后在证明这样构">
+<meta name="keywords" content="算法,生成树,贪心">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MST与贪心策略">
+<meta property="og:url" content="http://www.lsmian.com/blog/2019/07/05/MST_Greedy/index.html">
+<meta property="og:site_name" content="LDawn的自闭室">
+<meta property="og:description" content="定理 割中最轻边（唯一）必在某个（全部）MST中（利用此结论可完成对Prim与Kruskal的证明） 圈中最重边（唯一）必不在某个（全部）MST中 证明:若在MST中，则去掉e后，MST被划分为X-Y，再取圈中另一可链接X-Y的边，加入MST中，立得一个更小的MST    若所有圈/割的最重/轻边唯一 $\Rightarrow$ MST唯一,反之不成立 证明即添加/删除最轻/重边，之后在证明这样构">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-08-12T14:46:20.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MST与贪心策略">
+<meta name="twitter:description" content="定理 割中最轻边（唯一）必在某个（全部）MST中（利用此结论可完成对Prim与Kruskal的证明） 圈中最重边（唯一）必不在某个（全部）MST中 证明:若在MST中，则去掉e后，MST被划分为X-Y，再取圈中另一可链接X-Y的边，加入MST中，立得一个更小的MST    若所有圈/割的最重/轻边唯一 $\Rightarrow$ MST唯一,反之不成立 证明即添加/删除最轻/重边，之后在证明这样构">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.lsmian.com/blog/2019/07/05/MST_Greedy/">
+
+
+
+
+
+  <title>MST与贪心策略 | LDawn的自闭室</title>
+  
+
+
+
+
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget/autoload.js"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">LDawn的自闭室</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">一条不出货的小咸鱼</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.lsmian.com/blog/2019/07/05/MST_Greedy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="LDawn">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LDawn的自闭室">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MST与贪心策略</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-05T00:00:00+08:00">
+                2019-07-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="定理"><a href="#定理" class="headerlink" title="定理"></a>定理</h1><ul>
+<li><code>割中最轻边（唯一）必在某个（全部）MST中（利用此结论可完成对Prim与Kruskal的证明）</code></li>
+<li>圈中最重边（唯一）必不在某个（全部）MST中<ul>
+<li>证明:若在MST中，则去掉e后，MST被划分为X-Y，再取圈中另一可链接X-Y的边，加入MST中，立得一个更小的MST </li>
+</ul>
+</li>
+<li>若所有圈/割的最重/轻边唯一 $\Rightarrow$ MST唯一,反之不成立<ul>
+<li>证明即添加/删除最轻/重边，之后在证明这样构成的图是一棵树即可（容易证得连通无环）</li>
+</ul>
+</li>
+<li>(*)向一棵MST中任意加一边e，必构成一圈且e是圈中最大权。</li>
+</ul>
+<h1 id="Prim算法"><a href="#Prim算法" class="headerlink" title="Prim算法"></a>Prim算法</h1><ul>
+<li>算法描述：<ul>
+<li>记已选中点集为T,未选中点集为S，迭代的加入T-S距离最小的边</li>
+</ul>
+</li>
+<li>正确性证明：<ul>
+<li>法一</li>
+<li>只需证明任何一轮的生成树都满足(*)性质即可</li>
+<li>假设$T_{k-1}$满足(<em>)性质，下证$T_k$也满足(</em>)性质<ul>
+<li>向$T<em>k中加入一边e，若e在T</em>{k-1}中，则命题成立，若e不在T_{k-1}$中：</li>
+<li>则假定e不是圈中最大边，分别沿圈顺逆时针找到第一个大于e的两边e1,e2</li>
+<li>可以证明若Prim算法在之前先选择了e1,则接下来一定会先于e2选择e</li>
+<li>这与现在的G结构矛盾</li>
+<li>命题得证</li>
+</ul>
+</li>
+<li>综上，Prim算法正确</li>
+<li>法二</li>
+<li>只需证明任何一个新加入的边都满足割中最小边即可（最后补证是树即可）</li>
+<li>显然，命题得证。（hhhhhh忘了这茬，我傻了）</li>
+</ul>
+</li>
+<li>复杂度分析：<ul>
+<li>$O（(n+m)logn）$</li>
+</ul>
+</li>
+</ul>
+<h1 id="Kruskal算法"><a href="#Kruskal算法" class="headerlink" title="Kruskal算法"></a>Kruskal算法</h1><ul>
+<li>算法描述：<ul>
+<li>边排序，按序加边，并查集查环，无环则加</li>
+</ul>
+</li>
+<li>复杂度分析：$O(mlogm)$</li>
+</ul>
+<h1 id="Dijkstra框架"><a href="#Dijkstra框架" class="headerlink" title="Dijkstra框架"></a>Dijkstra框架</h1><ul>
+<li>证明相关<ul>
+<li>数学归纳法：<ul>
+<li>对Dijkstra的n的阶段进行数学归纳法证明，其中，第k个阶段表示从s到k个顶点的最短路都已确定</li>
+<li>base:s到其自身的最短路长为0，显然成立</li>
+<li>若对于$\le k均成立：$那么对于新被选中的第k+1个点z，我们设已经被选中的k个顶点构成点集S，则被选中路径经由S中一点m,我们需要证明其最短路就是我们选中的s-&gt;m-&gt;z：</li>
+<li>若不是s-&gt;m-&gt;z，<ul>
+<li>假设经由S内另一点m2，使得s-&gt;m2-&gt;z小于s-&gt;m-&gt;z，但算法选中的是经由S中一点到达z最短的路径，所以这样的m2不存在</li>
+<li>假设经由S外一点m2使得s-&gt;m2-&gt;z小于s-&gt;m-&gt;z，但s-&gt;m2必然经由S内一点出去，记出边为e，则因为算法选中的是最短的，所以s-&gt;e大于s-&gt;m-&gt;z，而e-&gt;m2-&gt;z又大于等于0，所以s-&gt;e-&gt;m2-&gt;z大于等于s-&gt;m-&gt;z，矛盾</li>
+</ul>
+</li>
+<li>所以，我们选中的z点正确。</li>
+<li>综上，Dijkstra框架证毕</li>
+</ul>
+</li>
+<li>副产品：若从s点出发的边都是负权，则Disktra仍然实用（前提是无负圈）</li>
+<li>算法复杂度：$\Omicron((m+n)logn)3$</li>
+</ul>
+</li>
+</ul>
+<h1 id="综合应用："><a href="#综合应用：" class="headerlink" title="综合应用："></a>综合应用：</h1><ul>
+<li>输油管道问题</li>
+<li>附带点权最小问题</li>
+<li>油箱加油问题:$w(v)=max(w(u),w(u,v))$</li>
+<li>DAG求最短路：转置后拓扑排序即可</li>
+</ul>
+<h1 id="约定"><a href="#约定" class="headerlink" title="约定"></a>约定</h1><ul>
+<li>考试不考非图贪心</li>
+<li>贪心按照题意来即可，不必证明其正确性。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+            <a href="/tags/生成树/" rel="tag"># 生成树</a>
+          
+            <a href="/tags/贪心/" rel="tag"># 贪心</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/25/CN_review/" rel="next" title="计网复习提纲">
+                <i class="fa fa-chevron-left"></i> 计网复习提纲
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/07/live2D/" rel="prev" title="博客新增看板娘啦">
+                博客新增看板娘啦 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="LDawn">
+            
+              <p class="site-author-name" itemprop="name">LDawn</p>
+              <p class="site-description motion-element" itemprop="description">不定时更新关于编程或网络攻防相关的文章</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/LDawns" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:lsm@smail.nju.edu.cn" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/LDawn13" target="_blank" title="Twitter">
+                      
+                        <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_44954803" title="CSDN" target="_blank">CSDN</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#定理"><span class="nav-number">1.</span> <span class="nav-text">定理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Prim算法"><span class="nav-number">2.</span> <span class="nav-text">Prim算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Kruskal算法"><span class="nav-number">3.</span> <span class="nav-text">Kruskal算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dijkstra框架"><span class="nav-number">4.</span> <span class="nav-text">Dijkstra框架</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#综合应用："><span class="nav-number">5.</span> <span class="nav-text">综合应用：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#约定"><span class="nav-number">6.</span> <span class="nav-text">约定</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">LDawn</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
